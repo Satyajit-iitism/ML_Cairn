@@ -1,0 +1,35 @@
+import lasio
+import pandas as pd
+import os
+
+# ✅ List of LAS filenames to process (ensure these files exist in the current working directory)
+las_files = [
+    "AISHWARIYA-1z.las", "AISHWARIYA-2z.las", "AISHWARIYA-3.las", 
+    "AISHWARIYA-4.las", "AISHWARIYA-5.las", "AISHWARIYA-6z.las"
+]
+
+# ✅ Loop through each LAS file and convert it to a CSV
+for las_path in las_files:
+    try:
+        # Read the LAS file using lasio
+        las = lasio.read(las_path)
+
+        # Convert LAS data to a pandas DataFrame and reset the index to make depth a column
+        df = las.df().reset_index()
+
+        # Extract the base name (without extension) to name the output CSV
+        base_name = os.path.splitext(os.path.basename(las_path))[0]
+        csv_filename = f"{base_name}.csv"
+
+        # Define the full path for the output CSV (same directory as input LAS file)
+        output_path = os.path.join(os.path.dirname(las_path), csv_filename)
+
+        # Save the DataFrame as a CSV file without the index column
+        df.to_csv(output_path, index=False)
+
+        # Success message
+        print(f"✅ Converted: {las_path} → {csv_filename}")
+    
+    except Exception as e:
+        # Error message in case the conversion fails
+        print(f"❌ Failed to convert {las_path}: {e}")
