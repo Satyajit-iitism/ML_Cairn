@@ -1,0 +1,69 @@
+import pandas as pd
+import joblib
+import os
+
+# ✅ Load the trained Random Forest model
+model = joblib.load('vp_Random-Forest-with_formation.pkl')
+
+# ✅ List of new encoded wells to predict on
+new_wells = [
+    "AISH-008-08-208_encoded", "AISH-009z-08-205_encoded", "AISH-011-02-203_encoded", "AISH-012-02-204_encoded",
+    "AISH-013z-02-206_encoded", "AISH-014-08-211_encoded", "AISH-015-08-212_encoded", "AISH-016-08-210_encoded",
+    "AISH-019-06-202_encoded", "AISH-020-06-204_encoded", "AISH-021-06-201_encoded", "AISH-023-07-105_encoded",
+    "AISH-024-01-104_encoded", "AISH-025-01-105_encoded", "AISH-028-05-101_encoded", "AISH-030-05-102_encoded",
+    "AISH-031-05-105_encoded", "AISH-032-08-203_encoded", "AISH-033-08-207_encoded", "AISH-034-01-108_encoded"
+]
+
+# ✅ Input features used during training
+numerical_features = ['GR_1', 'RHOB_1', 'TNPH_1', 'LLD_1']
+
+# ✅ Load reference CSV to extract training formation columns
+reference_file = 'AISH-007-08-206_encoded.csv'
+ref_df = pd.read_csv(reference_file)
+formation_columns = [col for col in ref_df.columns if col.startswith("FORMATION_")]
+features = numerical_features + formation_columns
+
+# ✅ Function to apply model and save results
+def predict_vp_for_well(file_name):
+    input_path = f"{file_name}.csv"
+    if not os.path.exists(input_path):
+        print(f"❌ File not found: {input_path}")
+        return
+
+    # Load data
+    df = pd.read_csv(input_path)
+    original_df = df.copy()  # Backup for saving
+
+    # Remove incomplete rows
+    df = df.dropna(subset=numerical_features)
+
+    # Fix formation columns
+    for col in formation_columns:
+        if col in df.columns:
+            df[col] = df[col].astype(bool).astype(int)
+        else:
+            df[col] = 0
+
+    # Match model feature order
+    X = df[features]
+
+    # Predict
+    df['new_Vp_predicted'] = model.predict(X)
+
+    # Add predictions back to full original DataFrame
+    original_df.loc[df.index, 'new_Vp_predicted'] = df['new_Vp_predicted']
+
+    # Move prediction column to the end
+    if 'new_Vp_predicted' in original_df.columns:
+        cols = list(original_df.columns)
+        cols.append(cols.pop(cols.index('new_Vp_predicted')))
+        original_df = original_df[cols]
+
+    # Save output
+    output_path = f"{file_name}_with_vp.csv"
+    original_df.to_csv(output_path, index=False)
+    print(f"✅ Prediction saved to {output_path}")
+
+# ✅ Loop through all new wells
+for well in new_wells:
+    predict_vp_for_well(well)
