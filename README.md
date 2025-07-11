@@ -5,6 +5,14 @@ This repository contains machine learning models used for **log prediction** fro
 We aim to predict the **sonic log (VP)** using other available logs.  
 The process involves data cleaning, feature engineering (including optional geological inputs), and training ML models.
 
+#order to execute the code
+##LAS to CSV
+##Encode_formation
+##Run any of the one models (Random_Forest_Train_Test, random_forest_with_Train_Test_validation.py, XGBoost_with_validation_wells.py)
+##Save_model
+##Predict_new_wells
+
+
 ---
 
 ## 🧠 Objective
