@@ -85,7 +85,7 @@ Example:
 
 > **Note**: Proper preprocessing is critical. Garbage in = Garbage out!
 
-###Here I am not using Depth as a feature but you can use it if your filed doesn't have a variable depth
+###Here I am not using Depth as a feature cause I have deviated wells and the MD or TVDSS doesn't make any sense.
 
 
 
